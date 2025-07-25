@@ -1,0 +1,130 @@
+{% extends 'webapp/base.html' %}
+
+{% block title %}Tasks{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Tasks</h1>
+    <a href="{% url 'task_create' %}" class="btn btn-primary">
+        <i class="bi bi-plus-lg"></i> Create New Task
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <ul class="nav nav-tabs mb-4" id="taskTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="pending-tab" data-bs-toggle="tab" data-bs-target="#pending" type="button" role="tab">
+                    Pending
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="completed-tab" data-bs-toggle="tab" data-bs-target="#completed" type="button" role="tab">
+                    Completed
+                </button>
+            </li>
+        </ul>
+        
+        <div class="tab-content" id="taskTabsContent">
+            <div class="tab-pane fade show active" id="pending" role="tabpanel">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Title</th>
+                                <th>Assigned To</th>
+                                <th>Due Date</th>
+                                <th>Priority</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for task in pending_tasks %}
+                            <tr>
+                                <td>{{ task.title }}</td>
+                                <td>{{ task.assigned_to.user.get_full_name }}</td>
+                                <td>{{ task.due_date|date:"M d, Y H:i" }}</td>
+                                <td>
+                                    <span class="badge 
+                                        {% if task.priority == 'HIGH' %}bg-danger
+                                        {% elif task.priority == 'MEDIUM' %}bg-warning text-dark
+                                        {% else %}bg-primary{% endif %}">
+                                        {{ task.get_priority_display }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="{% url 'task_update' task.pk %}" class="btn btn-outline-warning">Edit</a>
+                                        <a href="{% url 'complete_task' task.pk %}" class="btn btn-outline-success">Complete</a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center">No pending tasks</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="tab-pane fade" id="completed" role="tabpanel">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Title</th>
+                                <th>Assigned To</th>
+                                <th>Completed At</th>
+                                <th>Priority</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for task in completed_tasks %}
+                            <tr>
+                                <td>{{ task.title }}</td>
+                                <td>{{ task.assigned_to.user.get_full_name }}</td>
+                                <td>{{ task.completed_at|date:"M d, Y H:i" }}</td>
+                                <td>
+                                    <span class="badge 
+                                        {% if task.priority == 'HIGH' %}bg-danger
+                                        {% elif task.priority == 'MEDIUM' %}bg-warning text-dark
+                                        {% else %}bg-primary{% endif %}">
+                                        {{ task.get_priority_display }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="{% url 'task_update' task.pk %}" class="btn btn-sm btn-outline-secondary">View</a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center">No completed tasks</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Activate Bootstrap tabs
+    const tabElms = document.querySelectorAll('button[data-bs-toggle="tab"]');
+    tabElms.forEach(tabEl => {
+        tabEl.addEventListener('click', function (event) {
+            event.preventDefault();
+            const tab = new bootstrap.Tab(this);
+            tab.show();
+        });
+    });
+});
+</script>
+{% endblock %}

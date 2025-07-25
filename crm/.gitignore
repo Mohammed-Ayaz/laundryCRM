@@ -1,0 +1,57 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Django stuff
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+# Static files at development (handled by Whitenoise/CDN in production)
+/staticfiles/
+/media/
+
+# Environment variables
+.env
+.env.prod
+.env.local
+
+# IDE & Editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# macOS files
+.DS_Store
+
+# Node.js / npm (if using frontend tools)
+node_modules/
+npm-debug.log*
+
+# Coverage reports
+.coverage
+htmlcov/
+
+# PyCharm
+.idea/
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# PyEnv
+.python-version
+
+# Pipenv
+Pipfile.lock
+
+# Virtual environment
+venv/
+env/
+ENV/
+
+# Railway CLI (if used)
+.railway/

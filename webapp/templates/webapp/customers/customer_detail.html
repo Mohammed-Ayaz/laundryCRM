@@ -1,0 +1,68 @@
+{% extends 'webapp/base.html' %}
+
+{% block title %}{{ customer.first_name }} {{ customer.last_name }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h3 class="mb-0">Customer Details</h3>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <h5>Personal Information</h5>
+                        <p><strong>Name:</strong> {{ customer.first_name }} {{ customer.last_name }}</p>
+                        <p><strong>Email:</strong> {{ customer.email }}</p>
+                        <p><strong>Phone:</strong> {{ customer.phone }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h5>Address Information</h5>
+                        <p><strong>Address:</strong> {{ customer.address }}</p>
+                        <p><strong>City:</strong> {{ customer.city }}</p>
+                        <p><strong>Province:</strong> {{ customer.province }}</p>
+                        <p><strong>Country:</strong> {{ customer.country }}</p>
+                    </div>
+                </div>
+                
+                {% if customer.special_instructions %}
+                <div class="alert alert-info">
+                    <h5>Special Instructions</h5>
+                    <p>{{ customer.special_instructions }}</p>
+                </div>
+                {% endif %}
+            </div>
+            <div class="card-footer">
+                <a href="{% url 'customer_update' customer.pk %}" class="btn btn-warning">Edit</a>
+                <a href="{% url 'customer_list' %}" class="btn btn-secondary">Back to List</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">Recent Orders</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    {% for order in customer.order_set.all|slice:":5" %}
+                    <li class="list-group-item">
+                        <strong>Order #{{ order.id }}</strong><br>
+                        <small>Status: <span class="badge bg-info">{{ order.get_status_display }}</span></small><br>
+                        <small>Date: {{ order.order_date|date:"M d, Y" }}</small><br>
+                        <a href="{% url 'order_detail' order.pk %}" class="btn btn-sm btn-outline-primary mt-1">View</a>
+                    </li>
+                    {% empty %}
+                    <li class="list-group-item">No orders found</li>
+                    {% endfor %}
+                </ul>
+                <a href="{% url 'order_create' %}?customer={{ customer.id }}" class="btn btn-primary mt-3 w-100">
+                    Create New Order
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

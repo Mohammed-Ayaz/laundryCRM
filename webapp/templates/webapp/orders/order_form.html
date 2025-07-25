@@ -1,0 +1,162 @@
+{% extends 'webapp/base.html' %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">{{ title }}</h3>
+                </div>
+                <div class="card-body">
+                    <form method="post" id="order-form">
+                        {% csrf_token %}
+                        
+                        <!-- Main Order Form -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.customer.id_for_label }}">Customer*</label>
+                                    {{ form.customer }}
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label for="{{ form.assigned_staff.id_for_label }}">Assigned Staff</label>
+                                    {{ form.assigned_staff }}
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label>Status</label>
+                                    <input type="text" class="form-control" value="Pending" readonly>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Order Items -->
+                        <h4 class="mb-3">Order Items</h4>
+                        {{ formset.management_form }}
+                        <div id="items-container">
+                            {% for form in formset %}
+                            <div class="item-form mb-3 p-3 border rounded">
+                                <div class="row">
+                                    <div class="col-md-5">
+                                        <div class="form-group">
+                                            <label>Service*</label>
+                                            {{ form.service }}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <div class="form-group">
+                                            <label>Quantity*</label>
+                                            {{ form.quantity }}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <div class="form-group">
+                                            <label>Unit Price</label>
+                                            <input type="text" class="form-control unit-price" 
+                                                   value="{% if form.instance.service %}{{ form.instance.service.price }}{% endif %}" 
+                                                   readonly>
+                                            {{ form.id }}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <div class="form-group">
+                                            <label>Subtotal</label>
+                                            <input type="text" class="form-control subtotal" 
+                                                   value="{% if form.instance.service %}{{ form.instance.subtotal }}{% else %}0.00{% endif %}" 
+                                                   readonly>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-1 d-flex align-items-end">
+                                        {% if form.DELETE %}
+                                        <div class="form-group">
+                                            <label class="d-block">&nbsp;</label>
+                                            {{ form.DELETE }} <label for="{{ form.DELETE.id_for_label }}">Delete</label>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        
+                        <!-- Special Instructions -->
+                        <div class="form-group mb-4">
+                            <label for="{{ form.special_instructions.id_for_label }}">Special Instructions</label>
+                            {{ form.special_instructions }}
+                        </div>
+                        
+                        <!-- Totals -->
+                        <div class="row mb-4">
+                            <div class="col-md-3 offset-md-9">
+                                <div class="form-group">
+                                    <label>Order Total</label>
+                                    <input type="text" class="form-control font-weight-bold" 
+                                           id="order-total" value="0.00" readonly>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Form Actions -->
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Save Order
+                            </button>
+                            <a href="{% url 'order_list' %}" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Calculate prices when service or quantity changes
+    document.getElementById('items-container').addEventListener('change', function(e) {
+        if (e.target.matches('select[name*="service"]') || e.target.matches('input[name*="quantity"]')) {
+            updatePrices();
+        }
+    });
+    
+    // Initial calculation
+    updatePrices();
+    
+    function updatePrices() {
+        let orderTotal = 0;
+        
+        document.querySelectorAll('.item-form').forEach(form => {
+            const serviceSelect = form.querySelector('select[name*="service"]');
+            const quantityInput = form.querySelector('input[name*="quantity"]');
+            const unitPriceField = form.querySelector('.unit-price');
+            const subtotalField = form.querySelector('.subtotal');
+            
+            if (serviceSelect && serviceSelect.value) {
+                // Get price from selected option's data attribute
+                const selectedOption = serviceSelect.options[serviceSelect.selectedIndex];
+                const price = parseFloat(selectedOption.getAttribute('data-price')) || 0;
+                const quantity = parseInt(quantityInput.value) || 0;
+                const subtotal = price * quantity;
+                
+                unitPriceField.value = price.toFixed(2);
+                subtotalField.value = subtotal.toFixed(2);
+                orderTotal += subtotal;
+            } else {
+                unitPriceField.value = '0.00';
+                subtotalField.value = '0.00';
+            }
+        });
+        
+        document.getElementById('order-total').value = orderTotal.toFixed(2);
+    }
+});
+</script>
+{% endblock %}
